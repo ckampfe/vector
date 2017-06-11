@@ -19,6 +19,8 @@ end
 
 ## Use
 
+For examples, see [the documentation](https://hexdocs.pm/array_vector/Vector.html).
+
 ```elixir
 require Vector
 ```
