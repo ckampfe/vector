@@ -8,8 +8,8 @@ random access, implementing [Access](https://hexdocs.pm/elixir/Access.html), [En
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `vector` to your list of dependencies in `mix.exs`:
+This package is [available on Hex](https://hex.pm/docs/publish), and can be installed
+by adding `array_vector` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
