@@ -4,6 +4,8 @@ A vector for Elixir backed by Erlang's built-in
 [array](http://erlang.org/doc/man/array.html), providing fast
 random access, implementing [Access](https://hexdocs.pm/elixir/Access.html), [Enumerable](https://hexdocs.pm/elixir/Enumerable.html), and [Collectable](https://hexdocs.pm/elixir/Collectable.html), and [Inspect](https://hexdocs.pm/elixir/Inspect.html).
 
+[![Build Status](https://travis-ci.org/ckampfe/vector.svg?branch=master)](https://travis-ci.org/ckampfe/vector)
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
@@ -49,7 +51,7 @@ The representation is not documented and is subject to change without notice.
 Notice that arrays cannot be directly compared for equality.
 ```
 
-As such, any equality comparison will be linear time. I'll probably get around to implementing a `Vector.equals?/2` operation at some point. You can, always do `Vector.to_list(x) === Vector.to_list(y)` at the expense of converting the underlying `array` to a `list`.
+As such, any equality comparison will be linear time. I'll probably get around to implementing a `Vector.equals?/2` operation at some point. You can always do `Vector.to_list(x) === Vector.to_list(y)` at the expense of converting the underlying `array` to a `list`.
 
 ## Benchmark results
 
