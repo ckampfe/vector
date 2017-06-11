@@ -19,11 +19,7 @@ end
 
 ## Use
 
-For examples, see [the documentation](https://hexdocs.pm/array_vector/Vector.html).
-
-```elixir
-require Vector
-```
+For examples and use, see [the documentation](https://hexdocs.pm/array_vector/Vector.html).
 
 ## Development
 
