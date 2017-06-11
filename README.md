@@ -33,9 +33,10 @@ $ mix run benchmark.exs
 
 You may want to use this library if:
 
-- you have large collections of ordered data
-- you want to lookup and update that data randomly
-- you'd rather use an immutable collection than ETS
+- you have large, ordered data
+- you want to perform lots of random lookups and updates
+- you want `Access`, `Collectable`, and `Enumerable`, and `Inspect` semantics
+- you'd rather use an immutable collection than `ETS`
 
 Elixir's List and Map are great, but they are targeted at linear access and
 random, unordered access, respectively.
