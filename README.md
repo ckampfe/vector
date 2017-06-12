@@ -2,7 +2,7 @@
 
 A vector for Elixir backed by Erlang's built-in
 [array](http://erlang.org/doc/man/array.html), providing fast
-random access, implementing [Access](https://hexdocs.pm/elixir/Access.html), [Enumerable](https://hexdocs.pm/elixir/Enumerable.html), and [Collectable](https://hexdocs.pm/elixir/Collectable.html), and [Inspect](https://hexdocs.pm/elixir/Inspect.html).
+random access, implementing [Access](https://hexdocs.pm/elixir/Access.html), [Enumerable](https://hexdocs.pm/elixir/Enumerable.html), [Collectable](https://hexdocs.pm/elixir/Collectable.html), and [Inspect](https://hexdocs.pm/elixir/Inspect.html).
 
 [![Build Status](https://travis-ci.org/ckampfe/vector.svg?branch=master)](https://travis-ci.org/ckampfe/vector)
 
