@@ -3,7 +3,7 @@ defmodule Vector.Mixfile do
 
   def project do
     [app: :array_vector,
-     version: "0.1.0",
+     version: "0.1.1",
      elixir: "~> 1.4",
      package: package(),
      description: "An array-backed vector providing fast random access",
