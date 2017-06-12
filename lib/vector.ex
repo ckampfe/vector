@@ -309,13 +309,13 @@ defmodule Vector do
 
   ## Examples
 
-    iex> {value, new} = Vector.pop(Vector.new([1,2,3]), 2)
-    iex> {value, Vector.to_list(new)} # arrays cannot be checked for value equality
-    {3, [1, 2]}
+      iex> {value, new} = Vector.pop(Vector.new([1,2,3]), 2)
+      iex> {value, Vector.to_list(new)} # arrays cannot be checked for value equality
+      {3, [1, 2]}
 
-    iex> {value, new} = Vector.pop(Vector.new([1,2,3]), 99)
-    iex> {value, Vector.to_list(new)}
-    {nil, [1, 2, 3]}
+      iex> {value, new} = Vector.pop(Vector.new([1,2,3]), 99)
+      iex> {value, Vector.to_list(new)}
+      {nil, [1, 2, 3]}
   """
   def pop(vector, index, default \\ nil) do
     value = get(vector, index, default)
