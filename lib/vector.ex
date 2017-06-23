@@ -21,7 +21,7 @@ defmodule Vector do
 
   @behaviour Access
 
-  defstruct array: :array.new()
+  defstruct [array: :array.new(), size: 0]
 
   @doc """
   Constructs a array-backed vector
@@ -35,7 +35,7 @@ defmodule Vector do
       #Vector<[]>
   """
   def new(), do: %__MODULE__{}
-  def new(%__MODULE__{} = vector), do: vector
+
   @doc """
   Constructs an array-backed vector from an enumerable
 
@@ -47,13 +47,24 @@ defmodule Vector do
       iex> Vector.new(%{a: 1, b: 2})
       #Vector<[a: 1, b: 2]>
   """
+  def new(size) when is_integer(size) do
+    %__MODULE__{
+      array: :array.new([
+        {:size, size},
+        {:fixed, false},
+        {:default, :undefined}
+      ]),
+      size: size
+    }
+  end
+  def new(%__MODULE__{} = vector), do: vector
   def new(enumerable) do
     array =
       enumerable
       |> Enum.to_list
       |> do_new
 
-    %Vector{array: array}
+    %Vector{array: array, size: :array.sparse_size(array)}
   end
 
   defp do_new(list) when is_list(list) do
@@ -83,8 +94,8 @@ defmodule Vector do
       iex> Vector.size(Vector.new([1,2,3,4,5]))
       5
   """
-  def size(%Vector{array: array}) do
-    :array.sparse_size(array)
+  def size(%Vector{size: size}) do
+    size
   end
 
   @doc """
@@ -121,18 +132,30 @@ defmodule Vector do
 
       iex> Vector.fetch(Vector.new([1,2,3,4,5]), -2)
       {:ok, 4}
+
+      iex> Vector.fetch(Vector.new([1,2,3]), -9)
+      :error
   """
-  def fetch(%Vector{} = vector, index) when index < 0 do
-    fetch(vector, Vector.size(vector) + index)
-  end
   @spec fetch(t, index) :: {:ok, value} | :error
-  def fetch(%Vector{array: array}, index) do
+  def fetch(%Vector{size: size} = vector, index) do
+    case size do
+      count when (count + index) < 0 ->
+        :error
+      count when count <= index ->
+        :error
+      _count when index < 0 ->
+        fetch_vector(vector, size + index)
+      _ ->
+        fetch_vector(vector, index)
+    end
+  end
+
+  defp fetch_vector(%Vector{array: array}, index) do
     case :array.get(index, array) do
       :undefined -> :error
       value -> {:ok, value}
     end
   end
-
 
   @doc """
   Finds the element at the given `index` (zero-based) in logarithmic time.
@@ -161,7 +184,6 @@ defmodule Vector do
     end
   end
 
-
   @doc """
   Puts the given value under index in vector in logarithmic time
 
@@ -179,11 +201,15 @@ defmodule Vector do
       #Vector<[1, 2, 101]>
   """
   @spec put(t, index, value) :: t
-  def put(%Vector{} = vector, index, value) when index < 0 do
-    put(vector, Vector.size(vector) + index, value)
+  def put(%Vector{size: size} = vector, index, value) when index < 0 do
+    put(vector, size + index, value)
   end
-  def put(%Vector{array: array}, index, value) do
-    %Vector{array: :array.set(index, value, array)}
+  def put(%Vector{array: array, size: size} = vector, index, value) do
+    if index >= size do
+      %{vector | array: :array.set(index, value, array), size: size + 1}
+    else
+      %{vector | array: :array.set(index, value, array)}
+    end
   end
 
   @doc """
@@ -275,12 +301,15 @@ defmodule Vector do
       iex> Vector.delete(Vector.new([1,2,3,4,5]), 2)
       #Vector<[1, 2, 4, 5]>
 
+      iex> Vector.delete(Vector.new([1,2,3,4,5]), 2) |> Vector.size
+      4
+
       iex> Vector.delete(Vector.new([1,2,3]), 9)
       #Vector<[1, 2, 3]>
   """
   @spec delete(t, index) :: t
-  def delete(%Vector{array: array} = _vector, index) do
-    %Vector{array: :array.reset(index, array)}
+  def delete(%Vector{array: array, size: size} = vector, index) do
+    %{vector | array: :array.reset(index, array), size: size - 1}
   end
 
   @doc """
@@ -412,7 +441,7 @@ defmodule Vector do
   def slice(_vector, _start, _amount), do: Vector.new()
 
   defimpl Enumerable do
-    def count(vector), do: {:ok, Vector.size(vector)}
+    def count(%Vector{size: size}), do: {:ok, size}
     def member?(vector, val), do: {:ok, Vector.member?(vector, val)}
     def reduce(vector, acc, fun), do: Enumerable.List.reduce(Vector.to_list(vector), acc, fun)
   end
@@ -420,7 +449,7 @@ defmodule Vector do
   defimpl Collectable do
     def into(original) do
       {original, fn
-        vector, {:cont, value} -> Vector.put(vector, Vector.size(vector) + 1, value)
+        %Vector{size: size} = vector, {:cont, value} -> Vector.put(vector, size + 1, value)
         vector, :done -> vector
         _, :halt -> :ok
       end}
