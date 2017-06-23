@@ -322,6 +322,95 @@ defmodule Vector do
     {value, delete(vector, index)}
   end
 
+  @doc """
+  Return a portion of a Vector.
+
+  ## Examples
+
+      iex> Vector.new(1..100) |> Vector.slice(5..10)
+      #Vector<[6, 7, 8, 9, 10, 11]>
+
+      iex> Vector.new(1..10) |> Vector.slice(5..20)
+      #Vector<[6, 7, 8, 9, 10]>
+
+      # last five elements (negative positions)
+      iex> Vector.new(1..30) |> Vector.slice(-5..-1)
+      #Vector<[26, 27, 28, 29, 30]>
+
+      # last five elements (mixed positive and negative positions)
+      iex> Vector.new(1..30) |> Vector.slice(25..-1)
+      #Vector<[26, 27, 28, 29, 30]>
+
+      # out of bounds
+      iex> Vector.new(1..10) |> Vector.slice(11..20)
+      #Vector<[]>
+
+      # range.first is greater than range.last
+      iex> Vector.new(1..10) |> Vector.slice(6..5)
+      #Vector<[]>
+  """
+  @spec slice(t, Range.t) :: t
+  def slice(vector, range) do
+    Vector.new(Enum.slice(vector, range))
+  end
+  # def slice(%__MODULE__{size: size} = vector, %Range{first: first, last: last}) when first < last and first < 0 and last < 0 do
+  #   slice(vector, (size + first)..(size + last + 1))
+  # end
+
+  # def slice(%__MODULE__{size: size} = vector, %Range{first: first, last: last}) when first > last and last < 0 do
+  #   slice(vector, first..(size + last + 1))
+  # end
+
+  # def slice(_vector, %Range{first: first, last: last}) when first > last and last >= 0 do
+  #   Vector.new()
+  # end
+
+  # def slice(%__MODULE__{size: size} = vector, %Range{first: first, last: last}) when first <= last and first > 0 do
+  #   vector
+  #   |> slice_loop(0, first - 1)
+  #   |> slice_loop(last + 1, size)
+  # end
+
+  # # range is inclusive, so this has to be `first > last` to get the `==` iteration
+  # defp slice_loop(vector, position, finish) when position > finish do
+  #   vector
+  # end
+  # defp slice_loop(vector, position, finish) do
+  #   slice_loop(Vector.delete(vector, position), position + 1, finish)
+  # end
+
+  @doc """
+  Returns a subset of the given vector, from `start` position with `amount` of elements if available.
+
+  ## Examples
+
+      iex> Vector.new(1..100) |> Vector.slice(5, 10)
+      #Vector<[6, 7, 8, 9, 10, 11, 12, 13, 14, 15]>
+
+      # amount to take is greater than the number of elements
+      iex> Vector.new(1..10) |> Vector.slice(5, 100)
+      #Vector<[6, 7, 8, 9, 10]>
+
+      iex> Vector.new(1..10) |> Vector.slice(5, 0)
+      #Vector<[]>
+
+      # out of bound start position
+      iex> Vector.new(1..10) |> Vector.slice(10, 5)
+      #Vector<[]>
+
+      # out of bound start position (negative)
+      iex> Vector.new(1..10) |> Vector.slice(-11, 5)
+      #Vector<[]>
+  """
+  @spec slice(t, index, non_neg_integer) :: t
+  def slice(_vector, start, 0) when is_integer(start), do: Vector.new()
+
+  def slice(vector, start, amount) when is_integer(start) and start >= 0 and is_integer(amount) and amount > 0 do
+    slice(vector, start..(start + amount - 1))
+  end
+
+  def slice(_vector, _start, _amount), do: Vector.new()
+
   defimpl Enumerable do
     def count(vector), do: {:ok, Vector.size(vector)}
     def member?(vector, val), do: {:ok, Vector.member?(vector, val)}
