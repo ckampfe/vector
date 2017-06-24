@@ -35,7 +35,6 @@ defmodule Vector do
       #Vector<[]>
   """
   def new(), do: %__MODULE__{}
-  def new(%__MODULE__{} = vector), do: vector
   @doc """
   Constructs an array-backed vector from an enumerable
 
@@ -46,17 +45,35 @@ defmodule Vector do
 
       iex> Vector.new(%{a: 1, b: 2})
       #Vector<[a: 1, b: 2]>
+
+      iex> Vector.new(0)
+      #Vector<[]>
+
+      # this is exposing a bit of implementation, but I am
+      # unsure how else to test it
+      iex> Vector.new(5).array
+      {:array, 5, 10, :undefined, 10}
   """
+  def new(%__MODULE__{} = vector), do: vector
+  def new(size) when is_integer(size) do
+    %__MODULE__{
+      array: :array.new([
+        {:size, size},
+        {:fixed, false},
+        {:default, :undefined}
+      ])
+    }
+  end
   def new(enumerable) do
     array =
       enumerable
       |> Enum.to_list
-      |> do_new
+      |> new_from_list
 
     %Vector{array: array}
   end
 
-  defp do_new(list) when is_list(list) do
+  defp new_from_list(list) when is_list(list) do
     :array.from_list(list)
   end
 
@@ -133,7 +150,6 @@ defmodule Vector do
     end
   end
 
-
   @doc """
   Finds the element at the given `index` (zero-based) in logarithmic time.
 
@@ -160,7 +176,6 @@ defmodule Vector do
       :error -> raise Enum.OutOfBoundsError
     end
   end
-
 
   @doc """
   Puts the given value under index in vector in logarithmic time
@@ -320,6 +335,60 @@ defmodule Vector do
   def pop(vector, index, default \\ nil) do
     value = get(vector, index, default)
     {value, delete(vector, index)}
+  end
+
+  @doc """
+  Append an item to to a vector
+
+  ## Examples
+
+      iex> Vector.new([1, 2, 3]) |> Vector.append(9)
+      Vector.new([1, 2, 3, 9])
+
+      iex> Vector.new() |> Vector.append("hi")
+      Vector.new(["hi"])
+
+      iex> Vector.new([1, 2, 3]) |> Vector.append(9) |> Vector.size
+      4
+  """
+  @spec append(t, value) :: t
+  def append(%__MODULE__{} = vector, value) do
+    size = Vector.size(vector)
+    Vector.put(vector, size, value)
+  end
+
+  @doc """
+  Reverse a vector.
+
+  ## Examples
+
+      iex> vector = Vector.new([1,2,3])
+      iex> vector == vector |> Vector.reverse |> Vector.reverse
+      true
+
+      iex> Vector.reverse(Vector.new())
+      #Vector<[]>
+
+      iex> Vector.reverse(Vector.new([1, 2, 3]))
+      #Vector<[3, 2, 1]>
+  """
+  def reverse(%__MODULE__{} = vector) do
+    %{vector | array: :array.from_list(Enum.reverse(vector))}
+  end
+
+  @doc """
+  Map a vector.
+
+  ## Examples
+
+      iex> Vector.new() |> Vector.map(fn(_i, val) -> val + 1 end)
+      #Vector<[]>
+
+      iex> Vector.new([1, 2, 3]) |> Vector.map(fn(_i, val) -> val + 1 end)
+      #Vector<[2, 3, 4]>
+  """
+  def map(%__MODULE__{array: array} = vector, fun) when is_function(fun, 2) do
+    %{vector | array: :array.sparse_map(fun, array)}
   end
 
   defimpl Enumerable do

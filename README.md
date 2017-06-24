@@ -13,7 +13,7 @@ by adding `array_vector` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:array_vector, "~> 0.1.0"}]
+  [{:array_vector, "~> 0.2"}]
 end
 ```
 
@@ -58,83 +58,202 @@ Microbenchmarks are generally trash. This is mostly just to confirm that things 
 See `benchmark.exs` for details.
 
 ```
-xcxk066$> mix run benchmark.exs
 Operating System: macOS
 CPU Information: Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz
 Number of Available Cores: 8
 Available memory: 17.179869184 GB
-Elixir 1.4.4
-Erlang 19.3
+Elixir 1.4.5
+Erlang 20.0
 Benchmark suite executing with the following configuration:
 warmup: 5.00 s
 time: 10.00 s
 parallel: 1
 inputs: none specified
-Estimated total run time: 5.00 min
+Estimated total run time: 15.00 min
 
-Benchmarking list lookup 1000...
-Benchmarking list lookup 10000...
-Benchmarking list lookup 100000...
-Benchmarking list lookup 1000000...
-Benchmarking list lookup 10000000...
-Benchmarking list update 1000...
-Benchmarking list update 10000...
-Benchmarking list update 100000...
-Benchmarking list update 1000000...
-Benchmarking list update 10000000...
-Benchmarking vector lookup 1000...
-Benchmarking vector lookup 10000...
-Benchmarking vector lookup 100000...
-Benchmarking vector lookup 1000000...
-Benchmarking vector lookup 10000000...
-Benchmarking vector update 1000...
-Benchmarking vector update 10000...
-Benchmarking vector update 100000...
+
+Benchmarking list new 1000000...
+Benchmarking vector to_list 10000...
 Benchmarking vector update 1000000...
+Benchmarking list update 1000000...
+Benchmarking vector lookup 100000...
+Benchmarking vector reverse 10000...
+Benchmarking vector lookup 1000000...
+Benchmarking vector new from list 1000...
+Benchmarking vector map + 1 1000...
+Benchmarking vector new raw initialize 1000...
+Benchmarking vector new raw initialize 1000000...
+Benchmarking list reverse 10000...
+Benchmarking list reverse 1000...
+Benchmarking vector lookup 10000000...
+Benchmarking list lookup 10000...
+Benchmarking list map + 1 100000...
+Benchmarking list lookup 10000000...
 Benchmarking vector update 10000000...
+Benchmarking list map + 1 1000000...
+Benchmarking vector map + 1 10000000...
+Benchmarking vector new from list 100000...
+Benchmarking list reverse 1000000...
+Benchmarking list map + 1 10000000...
+Benchmarking vector new raw initialize 100000...
+Benchmarking vector update 10000...
+Benchmarking vector lookup 10000...
+Benchmarking list reverse 10000000...
+Benchmarking vector new from list 10000000...
+Benchmarking list lookup 1000000...
+Benchmarking vector new from list 1000000...
+Benchmarking list new 10000000...
+Benchmarking vector new from list 10000...
+Benchmarking list lookup 100000...
+Benchmarking vector map + 1 1000000...
+Benchmarking vector to_list 100000...
+Benchmarking vector map + 1 100000...
+Benchmarking list update 100000...
+Benchmarking vector new raw initialize 10000...
+Benchmarking list map + 1 1000...
+Benchmarking vector update 100000...
+Benchmarking list update 10000000...
+Benchmarking vector to_list 10000000...
+Benchmarking list new 1000...
+Benchmarking list new 10000...
+Benchmarking vector map + 1 10000...
+Benchmarking vector reverse 1000000...
+Benchmarking vector reverse 100000...
+Benchmarking list map + 1 10000...
+Benchmarking list reverse 100000...
+Benchmarking vector to_list 1000000...
+Benchmarking list new 100000...
+Benchmarking vector reverse 1000...
+Benchmarking vector new raw initialize 10000000...
+Benchmarking list lookup 1000...
+Benchmarking list update 1000...
+Benchmarking vector lookup 1000...
+Benchmarking vector update 1000...
+Benchmarking vector to_list 1000...
+Benchmarking list update 10000...
+Benchmarking vector reverse 10000000...
 
-Name                             ips        average  deviation         median
-vector lookup 1000            6.41 M       0.156 μs   ±209.17%       0.150 μs
-vector lookup 10000           5.14 M       0.195 μs   ±194.33%       0.180 μs
-vector lookup 100000          4.41 M        0.23 μs   ±116.40%        0.21 μs
-vector lookup 1000000         3.83 M        0.26 μs    ±60.88%        0.24 μs
-vector lookup 10000000        3.39 M        0.30 μs   ±487.48%        0.27 μs
-vector update 1000            2.25 M        0.44 μs    ±46.48%        0.40 μs
-vector update 10000           1.96 M        0.51 μs    ±25.20%        0.47 μs
-vector update 100000          1.66 M        0.60 μs    ±30.32%        0.56 μs
-vector update 1000000         1.45 M        0.69 μs    ±40.29%        0.64 μs
-vector update 10000000        1.04 M        0.96 μs   ±950.62%        0.80 μs
-list lookup 1000              0.32 M        3.13 μs    ±90.13%        3.00 μs
-list update 1000             0.114 M        8.73 μs   ±208.10%        8.00 μs
-list lookup 10000           0.0528 M       18.94 μs    ±76.38%       18.00 μs
-list update 10000           0.0195 M       51.26 μs    ±62.02%       48.00 μs
-list lookup 100000         0.00232 M      431.63 μs    ±18.37%      397.00 μs
-list lookup 1000000        0.00148 M      677.25 μs    ±27.83%      616.00 μs
-list update 100000         0.00083 M     1204.26 μs    ±14.70%     1143.00 μs
-list update 1000000        0.00054 M     1835.51 μs    ±19.11%     1776.00 μs
-list lookup 10000000       0.00002 M    49104.33 μs     ±5.86%    48766.00 μs
-list update 10000000       0.00000 M   534208.53 μs    ±14.76%   548700.00 μs
-
+Name                                         ips        average  deviation         median
+vector lookup 1000                    6464726.41       0.155 μs   ±274.26%       0.140 μs
+vector new raw initialize 1000        5860396.12       0.171 μs   ±195.76%       0.160 μs
+vector lookup 10000                   5466636.03       0.183 μs   ±170.40%       0.170 μs
+vector new raw initialize 10000       5312765.81       0.188 μs   ±175.05%       0.170 μs
+vector new raw initialize 100000      4887599.30        0.20 μs   ±164.90%       0.190 μs
+vector lookup 100000                  4500313.00        0.22 μs   ±114.90%        0.20 μs
+vector new raw initialize 10000000    4193030.45        0.24 μs   ±106.02%        0.22 μs
+vector lookup 1000000                 4034980.36        0.25 μs    ±70.77%        0.23 μs
+vector new raw initialize 1000000     3837327.86        0.26 μs  ±3299.96%        0.20 μs
+vector lookup 10000000                3228157.67        0.31 μs   ±472.50%        0.28 μs
+vector update 1000                    2255899.67        0.44 μs    ±48.03%        0.41 μs
+vector update 10000                   1910655.87        0.52 μs    ±26.15%        0.48 μs
+vector update 100000                  1488714.34        0.67 μs   ±795.60%        0.60 μs
+vector update 1000000                 1311684.48        0.76 μs    ±70.97%        0.67 μs
+vector update 10000000                 861867.99        1.16 μs  ±7100.42%        1.00 μs
+list lookup 1000                       538176.92        1.86 μs   ±159.90%        1.70 μs
+list reverse 1000                      327210.85        3.06 μs    ±43.49%        2.50 μs
+list update 1000                       196502.89        5.09 μs    ±24.80%        4.70 μs
+vector to_list 1000                     57372.83       17.43 μs    ±79.76%       16.00 μs
+vector new from list 1000               40466.37       24.71 μs    ±30.47%       23.00 μs
+list new 1000                           35675.23       28.03 μs    ±50.50%       25.00 μs
+list reverse 10000                      24634.15       40.59 μs    ±75.05%       25.00 μs
+vector map + 1 1000                     18064.10       55.36 μs    ±19.92%       53.00 μs
+list lookup 10000                       15703.65       63.68 μs    ±32.76%       59.00 μs
+list map + 1 1000                       11953.95       83.65 μs    ±22.92%       78.00 μs
+vector reverse 1000                     11173.90       89.49 μs    ±21.14%       85.00 μs
+list update 10000                        6083.59      164.38 μs    ±16.87%      160.00 μs
+vector to_list 10000                     4949.35      202.05 μs    ±21.69%      183.00 μs
+vector new from list 10000               3404.03      293.77 μs    ±36.33%      264.00 μs
+list new 10000                           3118.23      320.70 μs    ±21.48%      311.00 μs
+list reverse 100000                      2532.00      394.94 μs    ±79.38%      232.00 μs
+list lookup 100000                       1928.03      518.66 μs    ±18.65%      476.00 μs
+vector map + 1 10000                     1583.21      631.63 μs    ±22.54%      573.00 μs
+list map + 1 10000                       1177.98      848.91 μs    ±15.72%      834.00 μs
+vector reverse 10000                      829.62     1205.38 μs    ±23.93%     1081.00 μs
+list update 100000                        650.67     1536.88 μs     ±7.08%     1514.00 μs
+vector to_list 100000                     529.95     1886.97 μs    ±14.25%     1995.00 μs
+list new 100000                           319.84     3126.58 μs    ±15.82%     3276.00 μs
+vector new from list 100000               254.60     3927.78 μs    ±28.77%     3527.00 μs
+list lookup 1000000                       169.87     5886.73 μs    ±14.93%     5439.00 μs
+vector map + 1 100000                     158.98     6290.27 μs    ±12.13%     5924.00 μs
+list reverse 1000000                      100.69     9931.31 μs    ±46.44%     9099.00 μs
+list map + 1 100000                        88.38    11315.04 μs    ±16.46%    11164.50 μs
+vector reverse 100000                      71.16    14052.05 μs    ±15.67%    13752.00 μs
+list lookup 10000000                       65.54    15257.65 μs    ±11.04%    14829.00 μs
+list update 1000000                        32.93    30370.29 μs     ±6.21%    29811.00 μs
+vector to_list 1000000                     32.03    31224.72 μs    ±25.98%    29335.00 μs
+vector new from list 1000000               23.83    41962.28 μs    ±26.28%    36328.00 μs
+list update 10000000                       16.47    60719.26 μs    ±21.23%    61108.00 μs
+list new 1000000                           13.97    71566.26 μs     ±4.32%    71299.00 μs
+vector map + 1 1000000                     13.73    72812.56 μs    ±12.65%    69022.00 μs
+list map + 1 1000000                        8.18   122219.85 μs    ±12.67%   119922.50 μs
+list reverse 10000000                       6.64   150527.52 μs    ±45.15%   135144.00 μs
+vector reverse 1000000                      6.55   152588.91 μs    ±15.31%   143807.50 μs
+vector to_list 10000000                     3.54   282089.33 μs    ±21.21%   270121.50 μs
+list new 10000000                           1.80   555152.33 μs    ±38.68%   512246.00 μs
+vector new from list 10000000               1.71   583588.88 μs    ±15.54%   616824.00 μs
+vector map + 1 10000000                     1.18   848710.67 μs    ±14.01%   822347.00 μs
+list map + 1 10000000                       0.72  1384228.88 μs    ±14.75%  1378561.50 μs
+vector reverse 10000000                     0.57  1740072.50 μs     ±9.61%  1773625.00 μs
 
 Comparison:
-vector lookup 1000            6.41 M
-vector lookup 10000           5.14 M - 1.25x slower
-vector lookup 100000          4.41 M - 1.45x slower
-vector lookup 1000000         3.83 M - 1.68x slower
-vector lookup 10000000        3.39 M - 1.89x slower
-vector update 1000            2.25 M - 2.84x slower
-vector update 10000           1.96 M - 3.28x slower
-vector update 100000          1.66 M - 3.87x slower
-vector update 1000000         1.45 M - 4.41x slower
-vector update 10000000        1.04 M - 6.18x slower
-list lookup 1000              0.32 M - 20.08x slower
-list update 1000             0.114 M - 56.02x slower
-list lookup 10000           0.0528 M - 121.50x slower
-list update 10000           0.0195 M - 328.72x slower
-list lookup 100000         0.00232 M - 2768.18x slower
-list lookup 1000000        0.00148 M - 4343.48x slower
-list update 100000         0.00083 M - 7723.37x slower
-list update 1000000        0.00054 M - 11771.81x slower
-list lookup 10000000       0.00002 M - 314924.53x slower
-list update 10000000       0.00000 M - 3426079.89x slower
+vector lookup 1000                    6464726.41
+vector new raw initialize 1000        5860396.12 - 1.10x slower
+vector lookup 10000                   5466636.03 - 1.18x slower
+vector new raw initialize 10000       5312765.81 - 1.22x slower
+vector new raw initialize 100000      4887599.30 - 1.32x slower
+vector lookup 100000                  4500313.00 - 1.44x slower
+vector new raw initialize 10000000    4193030.45 - 1.54x slower
+vector lookup 1000000                 4034980.36 - 1.60x slower
+vector new raw initialize 1000000     3837327.86 - 1.68x slower
+vector lookup 10000000                3228157.67 - 2.00x slower
+vector update 1000                    2255899.67 - 2.87x slower
+vector update 10000                   1910655.87 - 3.38x slower
+vector update 100000                  1488714.34 - 4.34x slower
+vector update 1000000                 1311684.48 - 4.93x slower
+vector update 10000000                 861867.99 - 7.50x slower
+list lookup 1000                       538176.92 - 12.01x slower
+list reverse 1000                      327210.85 - 19.76x slower
+list update 1000                       196502.89 - 32.90x slower
+vector to_list 1000                     57372.83 - 112.68x slower
+vector new from list 1000               40466.37 - 159.76x slower
+list new 1000                           35675.23 - 181.21x slower
+list reverse 10000                      24634.15 - 262.43x slower
+vector map + 1 1000                     18064.10 - 357.88x slower
+list lookup 10000                       15703.65 - 411.67x slower
+list map + 1 1000                       11953.95 - 540.80x slower
+vector reverse 1000                     11173.90 - 578.56x slower
+list update 10000                        6083.59 - 1062.65x slower
+vector to_list 10000                     4949.35 - 1306.18x slower
+vector new from list 10000               3404.03 - 1899.14x slower
+list new 10000                           3118.23 - 2073.21x slower
+list reverse 100000                      2532.00 - 2553.21x slower
+list lookup 100000                       1928.03 - 3353.03x slower
+vector map + 1 10000                     1583.21 - 4083.29x slower
+list map + 1 10000                       1177.98 - 5487.96x slower
+vector reverse 10000                      829.62 - 7792.43x slower
+list update 100000                        650.67 - 9935.48x slower
+vector to_list 100000                     529.95 - 12198.75x slower
+list new 100000                           319.84 - 20212.50x slower
+vector new from list 100000               254.60 - 25392.00x slower
+list lookup 1000000                       169.87 - 38056.09x slower
+vector map + 1 100000                     158.98 - 40664.90x slower
+list reverse 1000000                      100.69 - 64203.19x slower
+list map + 1 100000                        88.38 - 73148.61x slower
+vector reverse 100000                      71.16 - 90842.68x slower
+list lookup 10000000                       65.54 - 98636.52x slower
+list update 1000000                        32.93 - 196335.65x slower
+vector to_list 1000000                     32.03 - 201859.25x slower
+vector new from list 1000000               23.83 - 271274.66x slower
+list update 10000000                       16.47 - 392533.43x slower
+list new 1000000                           13.97 - 462656.32x slower
+vector map + 1 1000000                     13.73 - 470713.27x slower
+list map + 1 1000000                        8.18 - 790117.92x slower
+list reverse 10000000                       6.64 - 973119.20x slower
+vector reverse 1000000                      6.55 - 986445.55x slower
+vector to_list 10000000                     3.54 - 1823630.36x slower
+list new 10000000                           1.80 - 3588907.95x slower
+vector new from list 10000000               1.71 - 3772742.46x slower
+vector map + 1 10000000                     1.18 - 5486682.26x slower
+list map + 1 10000000                       0.72 - 8948660.97x slower
+vector reverse 10000000                     0.57 - 11249092.65x slower
 ```
