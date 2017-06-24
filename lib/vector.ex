@@ -33,12 +33,6 @@ defmodule Vector do
 
       iex> Vector.new(Vector.new())
       #Vector<[]>
-  """
-  def new(), do: %__MODULE__{}
-  @doc """
-  Constructs an array-backed vector from an enumerable
-
-  ## Examples
 
       iex> Vector.new([1,2,3])
       #Vector<[1, 2, 3]>
@@ -54,6 +48,7 @@ defmodule Vector do
       iex> Vector.new(5).array
       {:array, 5, 10, :undefined, 10}
   """
+  def new(), do: %__MODULE__{}
   def new(%__MODULE__{} = vector), do: vector
   def new(size) when is_integer(size) do
     %__MODULE__{
