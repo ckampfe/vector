@@ -1,0 +1,10 @@
+# Changelog
+
+## 0.2.0
+
+- add new/1 when is_integer(size)
+- add append/2
+- add map/2
+- add reverse/1
+- add more benchmarks
+- travis: Elixir 1.4.5 and Erlang OTP 20.0
