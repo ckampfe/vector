@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- add reduce/3
+- add count/1
+- misc. fixes
+
 ## 0.2.0
 
 - add new/1 when is_integer(size)
