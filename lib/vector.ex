@@ -15,9 +15,11 @@ defmodule Vector do
   """
 
   # this is not great, but `array()` is not available in Elixir
-  @type t :: %__MODULE__{array: :array.array()}
+  @opaque t :: %__MODULE__{array: :array.array()}
   @type index :: integer
-  @type value :: term
+  @type value :: any
+  @type acc :: any
+  @type array_reducing_fn :: ((non_neg_integer, value, acc) -> acc)
 
   @behaviour Access
 
@@ -50,7 +52,7 @@ defmodule Vector do
   """
   def new(), do: %__MODULE__{}
   def new(%__MODULE__{} = vector), do: vector
-  def new(size) when is_integer(size) do
+  def new(size) when is_integer(size) and size >= 0 do
     %__MODULE__{
       array: :array.new([
         {:size, size},
@@ -59,17 +61,13 @@ defmodule Vector do
       ])
     }
   end
-  def new(enumerable) do
-    array =
-      enumerable
-      |> Enum.to_list
-      |> new_from_list
-
-    %Vector{array: array}
+  def new(list) when is_list(list) do
+    %Vector{array: :array.from_list(list)}
   end
-
-  defp new_from_list(list) when is_list(list) do
-    :array.from_list(list)
+  def new(enumerable) do
+    enumerable
+    |> Enum.to_list
+    |> new
   end
 
   @doc """
@@ -77,15 +75,50 @@ defmodule Vector do
 
   ## Examples
 
+      iex> Vector.new() |> Vector.to_list
+      []
+
       iex> Vector.to_list(Vector.new([1,2,3]))
       [1,2,3]
+
+      iex> Vector.new(100) |> Vector.put(39, 1) |> Vector.to_list
+      [1]
   """
   def to_list(%Vector{array: array}) do
     :array.sparse_to_list(array)
   end
 
   @doc """
-  Returns the size of a vector
+  Returns the count of initialized elements in the vector. Does not count uninitialized elements.
+  This function takes time linear to the number of uninitialized elements.
+
+  ## Examples
+
+      iex> Vector.count(Vector.new())
+      0
+
+      iex> Vector.count(Vector.new([1,2,3,4,5]))
+      5
+
+      iex> Vector.new(100) |> Vector.count
+      0
+
+      iex> Vector.new(100)
+      ...> |> Vector.put(43, 1)
+      ...> |> Vector.count
+      1
+  """
+  @spec count(t) :: non_neg_integer
+  def count(%__MODULE__{} = vector) do
+    reduce(vector, 0, fn(_index, _val, acc) -> acc + 1 end)
+  end
+
+  @doc """
+  Returns the total size of a vector, including all uninitialized/default values.
+
+  This function is a reflection of the total memory size of the underlying Erlang array. It does
+  not say anything about the elements of the array. For a count of non-default elements in the vector,
+  see `count/1`.
 
   ## Examples
 
@@ -94,10 +127,14 @@ defmodule Vector do
 
       iex> Vector.size(Vector.new([1,2,3,4,5]))
       5
+
+      iex> Vector.new(100) |> Vector.size
+      100
+
+      iex> Vector.new(100) |> Vector.put(43, 1) |> Vector.size
+      100
   """
-  def size(%Vector{array: array}) do
-    :array.sparse_size(array)
-  end
+  def size(%Vector{array: array}), do: array.size
 
   @doc """
   Checks if `vector` contains `value`
@@ -133,12 +170,20 @@ defmodule Vector do
 
       iex> Vector.fetch(Vector.new([1,2,3,4,5]), -2)
       {:ok, 4}
+
+      iex> Vector.fetch(Vector.new([1,2,3,4,5]), -6)
+      :error
   """
-  def fetch(%Vector{} = vector, index) when index < 0 do
-    fetch(vector, Vector.size(vector) + index)
+  @spec fetch(t, index) :: {:ok, any} | :error
+  def fetch(%__MODULE__{} = vector, index) when is_integer(index) and index < 0 do
+    size = Vector.size(vector)
+    if (index * -1) > size do
+      :error
+    else
+      fetch(vector, size + index)
+    end
   end
-  @spec fetch(t, index) :: {:ok, value} | :error
-  def fetch(%Vector{array: array}, index) do
+  def fetch(%Vector{array: array}, index) when is_integer(index) and index >= 0 do
     case :array.get(index, array) do
       :undefined -> :error
       value -> {:ok, value}
@@ -187,13 +232,22 @@ defmodule Vector do
 
       iex> Vector.put(Vector.new([1,2,3]), -1, 101)
       #Vector<[1, 2, 101]>
+
+      iex> Vector.put(Vector.new(3), -99, "hi")
+      ** (ArgumentError) negative index out of bounds
   """
   @spec put(t, index, value) :: t
-  def put(%Vector{} = vector, index, value) when index < 0 do
-    put(vector, Vector.size(vector) + index, value)
+  def put(%__MODULE__{} = vector, index, value) when is_integer(index) and index < 0 do
+    new_size = Vector.size(vector) + index
+    cond do
+      new_size >= 0 ->
+        put(vector, new_size, value)
+      true ->
+        raise ArgumentError, "negative index out of bounds"
+    end
   end
-  def put(%Vector{array: array}, index, value) do
-    %Vector{array: :array.set(index, value, array)}
+  def put(%__MODULE__{array: array} = vector, index, value) when is_integer(index) and index >= 0 do
+    %{vector | array: :array.set(index, value, array)}
   end
 
   @doc """
@@ -229,8 +283,8 @@ defmodule Vector do
   @doc """
   Updates index with the given function in logarithmic time.
 
-  If index is present in map with value value, fun is invoked with argument value
-  and its result is used as the new value of index. If index is not present in map,
+  If index is present in vector with value, fun is invoked with argument value
+  and its result is used as the new value of index. If index is not present in vector,
   a Enum.OutOfBoundsError exception is raised.
 
   ## Examples
@@ -289,8 +343,8 @@ defmodule Vector do
       #Vector<[1, 2, 3]>
   """
   @spec delete(t, index) :: t
-  def delete(%Vector{array: array} = _vector, index) do
-    %Vector{array: :array.reset(index, array)}
+  def delete(%Vector{array: array} = vector, index) do
+    %{vector | array: :array.reset(index, array)}
   end
 
   @doc """
@@ -348,31 +402,72 @@ defmodule Vector do
   """
   @spec append(t, value) :: t
   def append(%__MODULE__{} = vector, value) do
-    size = Vector.size(vector)
-    Vector.put(vector, size, value)
+    Vector.put(vector, Vector.size(vector), value)
   end
 
   @doc """
-  Reverse a vector.
+  Reverse every element in a vector, not including the uninitialized elements.
+  Preserves `count`, does not preserve `size`.
 
   ## Examples
 
       iex> vector = Vector.new([1,2,3])
-      iex> vector == vector |> Vector.reverse |> Vector.reverse
-      true
+      iex> vector |> Vector.reverse |> Vector.reverse
+      #Vector<[1, 2, 3]>
 
       iex> Vector.reverse(Vector.new())
       #Vector<[]>
 
       iex> Vector.reverse(Vector.new([1, 2, 3]))
       #Vector<[3, 2, 1]>
+
+      iex> vector = Vector.new(50) |> Vector.put(39, "hi")
+      iex> reversed = Vector.reverse(vector)
+      iex> Vector.count(vector) == Vector.count(reversed)
+      true
   """
+  @spec reverse(t) :: t
   def reverse(%__MODULE__{} = vector) do
     %{vector | array: :array.from_list(Enum.reverse(vector))}
   end
 
   @doc """
-  Map a vector.
+  Run a function (`fun`) over a vector which takes two arguments: the accumulated results so far (`acc`) and the current vector value (`val`).
+  Hits only the initialized elements of the vector. Note that `fun` is arity-3, taking the `index`, `value`, and `acc` in that order.
+
+  Think of this function as the equivalent of the following pseudocode:
+
+  ```
+  vector |> filter(initialized?) |> reduce
+  ```
+
+  without the intermediate filter, due to sparse folding being an array primitive.
+
+  ## Examples
+
+      iex> Vector.new([1, 2, 3]) |> Vector.reduce(0, fn(_index, val, acc) -> val + acc end)
+      6
+
+      iex> Vector.new([1, 2, 3]) |> Vector.reduce(Vector.new(), fn(_index, val, acc) -> Vector.append(acc, val + 1) end)
+      #Vector<[2, 3, 4]>
+
+      iex> Vector.new(100)
+      ...> |> Vector.put(25, 1)
+      ...> |> Vector.put(50, 1)
+      ...> |> Vector.put(75, 1)
+      ...> |> Vector.put(90, 1)
+      ...> |> Vector.reduce(0, fn(_index, val, acc) -> acc + val end)
+      4
+  """
+  @spec reduce(t, acc, array_reducing_fn) :: acc
+  def reduce(%__MODULE__{array: array}, initial, fun) when is_function(fun, 3) do
+    :array.sparse_foldl(fun, initial, array)
+  end
+
+  @doc """
+  Run a function over the elements of the vector, not including the uninitialized ones,
+  and return the result in a new vector.
+  Good for large vectors where only a few elements are set.
 
   ## Examples
 
@@ -381,13 +476,16 @@ defmodule Vector do
 
       iex> Vector.new([1, 2, 3]) |> Vector.map(fn(_i, val) -> val + 1 end)
       #Vector<[2, 3, 4]>
+
+      iex> Vector.new(100) |> Vector.map(fn(_i, _val) -> 1 end) |> Enum.sum
+      0
   """
   def map(%__MODULE__{array: array} = vector, fun) when is_function(fun, 2) do
     %{vector | array: :array.sparse_map(fun, array)}
   end
 
   defimpl Enumerable do
-    def count(vector), do: {:ok, Vector.size(vector)}
+    def count(vector), do: {:ok, Vector.count(vector)}
     def member?(vector, val), do: {:ok, Vector.member?(vector, val)}
     def reduce(vector, acc, fun), do: Enumerable.List.reduce(Vector.to_list(vector), acc, fun)
   end
@@ -395,7 +493,7 @@ defmodule Vector do
   defimpl Collectable do
     def into(original) do
       {original, fn
-        vector, {:cont, value} -> Vector.put(vector, Vector.size(vector) + 1, value)
+        vector, {:cont, value} -> Vector.put(vector, Vector.count(vector) + 1, value)
         vector, :done -> vector
         _, :halt -> :ok
       end}

@@ -1,6 +1,6 @@
 defmodule VectorTest do
   use ExUnit.Case
-  doctest Vector
+  doctest Vector, async: true
 
   setup do
     list = Enum.to_list(0..100)
