@@ -13,7 +13,7 @@ by adding `array_vector` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:array_vector, "~> 0.2"}]
+  [{:array_vector, "~> 0.3"}]
 end
 ```
 
